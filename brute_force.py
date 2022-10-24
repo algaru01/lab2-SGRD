@@ -5,6 +5,8 @@ import psutil
 import os
 import argparse
 import signal
+import time
+import datetime
 
 ALPHABET_FIRST_LETTER = 'a'
 ALPHABET_LAST_LETTER = 'z'
@@ -34,7 +36,7 @@ class PartialKeySearcher:
         return f'[Thread {self.idPartialSearcher}] Search from {self.initLetter } to {self.endLetter}.'
 
 ############################### ARGUMENTS MANAGEMENT ###############################
-def readArguments():
+def parseArguments():
 
     args = getArguments()
 
@@ -215,14 +217,19 @@ def tryKey(key):
     try:
         command = "gpg --pinentry-mode loopback --passphrase " + key + " -d " + g_file_name + " 2>&1"
         output = run(command, shell=True)
-        print(output)
-
-        command = "echo " + key + " >  key.txt"
-        output = run(command, shell=True)
-
-        return 1
     except CalledProcessError:
+        print("Wrong")
         return 0
+
+    try:
+        os.mkdir('keys_found')
+    except OSError:
+        pass
+
+    command = "echo " + key + " >  keys_found/" + g_file_name.split('/')[-1].split('.')[0] + "_key.txt"
+    run(command, shell=True)
+
+    return 1
 
 def nextKey(key, partial_searcher_key):
     index = -1
@@ -269,8 +276,7 @@ def terminateMainSearchers(l_main_searchers):
 
 
 def main():
-
-    readArguments()
+    parseArguments()
 
     pipe_recv, pipe_send = Pipe()
     l_main_searchers = []
@@ -279,20 +285,18 @@ def main():
 
     createMainSearchers(l_main_searchers, pipe_send)
 
+    start_time = time.time()
     startSearchers(l_main_searchers)
     
     key_found = pipe_recv.recv()
+    end_time = time.time()
 
     terminateMainSearchers(l_main_searchers)
 
-    print(f'The key has been found: {key_found}')
+    print(f'The key has been found: {key_found}.')
+    print(f'Time needed: {datetime.timedelta(seconds=end_time - start_time)}.')
 
 
-#TODO Modularizar y encuadernar nuevos metodos
-#TODO Indicar por argumento si empezar a partir de una clave predeterminada
-
-
-if __name__ == '__main__':
-    
+if __name__ == '__main__': 
     main()
     
