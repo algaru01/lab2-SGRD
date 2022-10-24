@@ -33,8 +33,8 @@ python3 brute_force.py --help
 ```
 
 ## Resultado
-El resultado del _script_ será mostrado en pantalla, seguido de una estimación del tiempo necesario para la búsqueda,
-al igual que escrito en un archivo de texto en:
+El resultado del _script_ será mostrado en pantalla, seguido de una estimación del tiempo necesario para la búsqueda.
+También se escribirá la clave en un archivo de texto en:
 ```
 keys_found/[nombre_archivo_gpg]_key.txt
 ```
